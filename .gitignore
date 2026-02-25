@@ -25,3 +25,11 @@ __pycache__/
 
 # 日志
 *.log
+
+# quant-news-site (subproject)
+quant-news-site/backend/.venv/
+quant-news-site/**/__pycache__/
+quant-news-site/data/*.json
+!quant-news-site/data/.gitkeep
+
+.env

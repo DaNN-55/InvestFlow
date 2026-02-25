@@ -1,0 +1,1278 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>个人资讯阅读台 | 本地预览</title>
+    <style>
+      :root {
+        --bg: #efe7d8;
+        --bg2: #e6dcc7;
+        --paper: #fffdf7;
+        --ink: #1f1b16;
+        --muted: #6c6256;
+        --line: #d7cbb2;
+        --line-strong: #b9a98b;
+        --teal: #0f6f66;
+        --rust: #bc6531;
+        --chip: #efe5d0;
+        --warn: #8f5a1f;
+        --shadow: 0 18px 40px rgba(22, 16, 8, 0.08);
+        --shadow-soft: 0 10px 24px rgba(22, 16, 8, 0.05);
+        --mono: "Consolas", ui-monospace, monospace;
+        --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        --serif: "Georgia", "Songti SC", "Times New Roman", serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: var(--serif);
+        background:
+          radial-gradient(
+            70rem 40rem at 95% -10%,
+            rgba(15, 111, 102, 0.14),
+            transparent 55%
+          ),
+          radial-gradient(
+            46rem 28rem at -5% 6%,
+            rgba(188, 101, 49, 0.12),
+            transparent 60%
+          ),
+          linear-gradient(180deg, var(--bg), var(--bg2));
+      }
+      .app {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 16px 14px 34px;
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 14px;
+      }
+      .panel {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 253, 247, 0.95),
+          rgba(249, 243, 232, 0.94)
+        );
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+      }
+      .sidebar {
+        position: sticky;
+        top: 12px;
+        align-self: start;
+        padding: 14px;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+      }
+      .main {
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font: 11px/1.2 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+      }
+      .brand {
+        margin: 0;
+        line-height: 0.95;
+        font-size: 32px;
+        letter-spacing: 0.01em;
+      }
+      .brand span {
+        color: var(--teal);
+      }
+      .desc {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font: 13px/1.5 var(--sans);
+      }
+      .divider {
+        margin: 14px 0;
+        border: 0;
+        border-top: 1px dashed var(--line);
+      }
+      .section-title {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font: 11px/1.2 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .grid2.compact input {
+        text-align: center;
+        min-height: 44px;
+      }
+      .stack {
+        display: grid;
+        gap: 8px;
+      }
+      button,
+      input,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        padding: 10px 11px;
+        font: 13px/1.2 var(--sans);
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          transform 0.12s ease,
+          opacity 0.15s ease;
+      }
+      button {
+        cursor: pointer;
+        text-align: left;
+        min-height: 44px;
+        font-weight: 600;
+      }
+      button:hover,
+      input:hover,
+      select:hover {
+        border-color: var(--line-strong);
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: none;
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px rgba(15, 111, 102, 0.14);
+      }
+      button:active {
+        transform: translateY(1px);
+      }
+      button[disabled] {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+      .btn-primary {
+        background: linear-gradient(180deg, #108176, #0f6f66);
+        color: #fff;
+        border-color: #0f6f66;
+      }
+      .btn-warm {
+        background: linear-gradient(180deg, #cb6f38, #bc6531);
+        color: #fff;
+        border-color: #bc6531;
+      }
+      .btn-soft {
+        background: var(--chip);
+      }
+      .meta-box,
+      .sub-form,
+      .filters-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.74);
+        padding: 10px;
+      }
+      .meta-box {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font: 12px/1.35 var(--sans);
+      }
+      .meta-box strong {
+        color: var(--ink);
+      }
+      .source-list {
+        display: grid;
+        gap: 7px;
+        max-height: 24vh;
+        overflow: auto;
+        padding-right: 2px;
+      }
+      .source-item {
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.76);
+        box-shadow: var(--shadow-soft);
+      }
+      .source-item b {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font: 600 13px/1.25 var(--sans);
+      }
+      .source-item span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font: 12px/1.35 var(--sans);
+        word-break: break-all;
+      }
+      .tag {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 1px 6px;
+        font: 10px/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .tag.custom {
+        border-color: rgba(15, 111, 102, 0.35);
+        color: #0e665e;
+      }
+      .sub-form {
+        display: grid;
+        gap: 8px;
+      }
+      .sub-form .row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .sub-form label {
+        display: grid;
+        gap: 5px;
+        color: var(--muted);
+        font: 11px/1.2 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .check-row {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font: 12px/1.3 var(--sans);
+      }
+      .check-row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .check-row input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        padding: 0;
+        min-height: 0;
+      }
+      .hero {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        background:
+          radial-gradient(
+            circle at 100% 0%,
+            rgba(15, 111, 102, 0.12),
+            transparent 46%
+          ),
+          radial-gradient(
+            circle at 0% 100%,
+            rgba(171, 139, 64, 0.12),
+            transparent 50%
+          ),
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.84),
+            rgba(255, 252, 244, 0.9)
+          );
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 12px;
+        align-items: start;
+      }
+      .hero-title {
+        margin: 3px 0 6px;
+        font-size: 31px;
+        line-height: 1;
+      }
+      .hero-sub {
+        margin: 0;
+        color: var(--muted);
+        font: 13px/1.5 var(--sans);
+        max-width: 56ch;
+      }
+      .status-pill {
+        margin-top: 11px;
+        display: grid;
+        gap: 6px;
+        width: min(360px, 100%);
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.78);
+      }
+      .status-track {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(239, 229, 208, 0.65);
+        overflow: hidden;
+      }
+      .status-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #108176, #0f6f66);
+        transition: width 0.18s ease;
+      }
+      .status-text {
+        color: var(--muted);
+        font: 12px/1.2 var(--mono);
+        letter-spacing: 0.04em;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.18);
+          opacity: 0.65;
+        }
+      }
+      .quick-grid {
+        display: grid;
+        gap: 8px;
+      }
+      .quick-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.78);
+      }
+      .quick-card .k {
+        color: var(--muted);
+        font: 11px/1.2 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 4px;
+      }
+      .quick-card .v {
+        color: var(--ink);
+        font: 700 18px/1.1 var(--serif);
+        word-break: break-word;
+      }
+      .filters-grid {
+        display: grid;
+        grid-template-columns: 170px 220px 1fr;
+        gap: 8px;
+      }
+      .field {
+        display: grid;
+        align-content: start;
+      }
+      .field label {
+        margin: 0 0 5px;
+        color: var(--muted);
+        font: 11px/1.2 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+      .overview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        align-items: center;
+      }
+      .chip {
+        border: 1px solid var(--line);
+        background: var(--chip);
+        border-radius: 999px;
+        padding: 5px 10px;
+        color: var(--muted);
+        font: 12px/1.2 var(--sans);
+      }
+      .chip-new {
+        border-color: rgba(15, 111, 102, 0.35);
+        color: #0e665e;
+        background: rgba(15, 111, 102, 0.08);
+      }
+      .feed-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 2px 2px 0;
+      }
+      .feed-head h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .feed-head .hint {
+        color: var(--muted);
+        font: 12px/1.3 var(--sans);
+      }
+      .cards {
+        display: grid;
+        gap: 10px;
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.9),
+          rgba(255, 250, 240, 0.92)
+        );
+        box-shadow: var(--shadow-soft);
+      }
+      .card.is-new {
+        border-color: rgba(15, 111, 102, 0.38);
+        box-shadow:
+          inset 0 0 0 1px rgba(15, 111, 102, 0.1),
+          var(--shadow-soft);
+      }
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        color: var(--muted);
+        font: 12px/1.2 var(--sans);
+      }
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 3px 8px;
+        white-space: nowrap;
+      }
+      .badge.lang-en {
+        border-color: rgba(15, 111, 102, 0.35);
+        color: #0e665e;
+      }
+      .badge.lang-zh {
+        border-color: rgba(188, 101, 49, 0.35);
+        color: #945024;
+      }
+      .badge.new-item {
+        border-color: rgba(15, 111, 102, 0.35);
+        color: #0e665e;
+        background: rgba(15, 111, 102, 0.08);
+      }
+      .stamp {
+        border: 1px dashed var(--line);
+        border-radius: 999px;
+        padding: 4px 8px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.55);
+        font: 10px/1 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .title {
+        margin: 0 0 8px;
+        font-size: 19px;
+        line-height: 1.28;
+        letter-spacing: 0.005em;
+      }
+      .title a {
+        color: inherit;
+        text-decoration: none;
+        background-image: linear-gradient(currentColor, currentColor);
+        background-repeat: no-repeat;
+        background-position: 0 100%;
+        background-size: 0 1px;
+        transition:
+          color 0.15s ease,
+          background-size 0.2s ease;
+      }
+      .title a:hover {
+        color: var(--teal);
+        background-size: 100% 1px;
+      }
+      .summary {
+        margin: 0;
+        color: #2c261f;
+        white-space: pre-wrap;
+        font: 14px/1.56 var(--sans);
+      }
+      .summary-block + .summary-block {
+        margin-top: 10px;
+        padding-top: 9px;
+        border-top: 1px dashed var(--line);
+      }
+      .summary-label {
+        margin: 0 0 5px;
+        color: var(--muted);
+        font: 11px/1.2 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .snippet {
+        margin-top: 9px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--line);
+        color: var(--muted);
+        font: 12px/1.45 var(--sans);
+      }
+      .empty {
+        border: 1px dashed var(--line-strong);
+        border-radius: 16px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.65);
+        color: var(--muted);
+        font: 14px/1.55 var(--sans);
+      }
+      .pager {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+      }
+      .pager-info {
+        color: var(--muted);
+        font: 12px/1.2 var(--mono);
+        min-width: 110px;
+        text-align: right;
+      }
+      .pager button {
+        width: auto;
+        min-width: 84px;
+        min-height: 38px;
+        text-align: center;
+        padding: 8px 12px;
+      }
+      .kbd {
+        display: inline-block;
+        border: 1px solid var(--line);
+        border-bottom-width: 2px;
+        border-radius: 6px;
+        background: #fff;
+        color: var(--ink);
+        padding: 1px 5px;
+        font: 11px/1.2 var(--mono);
+      }
+      @media (max-width: 1180px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          position: static;
+          max-height: none;
+        }
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+        .filters-grid {
+          grid-template-columns: 1fr;
+        }
+        .source-list {
+          max-height: none;
+        }
+      }
+      @media (max-width: 640px) {
+        .grid2,
+        .sub-form .row2 {
+          grid-template-columns: 1fr;
+        }
+        .brand {
+          font-size: 28px;
+        }
+        .hero-title {
+          font-size: 26px;
+        }
+        .title {
+          font-size: 17px;
+        }
+        button,
+        input,
+        select {
+          font-size: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .status-fill {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="panel sidebar" aria-label="控制面板">
+        <p class="eyebrow">个人资讯台 / 本地预览</p>
+        <h1 class="brand">个人<span>资讯</span>阅读台</h1>
+        <p class="desc">
+          这是你的自用信息收集与阅读工作台。先抓取，再摘要，再筛选浏览。当前页面为本地预览版，适合日常查看财经、商业与资讯内容。
+        </p>
+
+        <hr class="divider" />
+        <p class="section-title">任务</p>
+        <div class="grid2">
+          <button class="btn-primary" id="fetchBtn">抓取资讯</button>
+          <button class="btn-warm" id="sumBtn">生成摘要</button>
+          <button class="btn-soft" id="refreshBtn">刷新列表</button>
+          <button class="btn-soft" id="clearBtn">清空历史</button>
+        </div>
+        <div class="grid2 compact" style="margin-top: 8px">
+          <input
+            id="fetchLimitInput"
+            type="number"
+            min="1"
+            max="1000"
+            value="20"
+            placeholder="抓取总上限"
+            aria-label="抓取总上限"
+          />
+          <input
+            id="summarizeLimitInput"
+            type="number"
+            min="1"
+            max="1000"
+            value="10"
+            placeholder="摘要上限"
+            aria-label="摘要上限"
+          />
+        </div>
+
+        <input
+          id="apiBase"
+          type="hidden"
+          value="http://127.0.0.1:8000"
+          aria-label="API 基础地址"
+        />
+
+        <hr class="divider" />
+        <p class="section-title">订阅来源（自定义）</p>
+        <form class="sub-form" id="subForm">
+          <label
+            >来源名称<input
+              id="subName"
+              placeholder="例如：我的财经 RSS"
+              required
+          /></label>
+          <label
+            >RSS 地址<input
+              id="subUrl"
+              placeholder="https://example.com/rss.xml"
+              required
+          /></label>
+          <div class="row2">
+            <label
+              >语言<select id="subLang">
+                <option value="zh">中文</option>
+                <option value="en">英文</option>
+                <option value="unknown">未知</option>
+              </select></label
+            >
+            <label
+              >类型<select id="subType">
+                <option value="rss">RSS</option>
+              </select></label
+            >
+          </div>
+          <div class="check-row">
+            <label
+              ><input type="checkbox" id="subEnabled" checked /> 启用</label
+            >
+            <label><input type="checkbox" id="subFetchBody" /> 抓取正文</label>
+          </div>
+          <button type="submit" class="btn-primary" id="subSubmitBtn">
+            添加订阅来源
+          </button>
+        </form>
+
+        <hr class="divider" />
+        <p class="section-title">来源列表（默认 + 自定义）</p>
+        <div class="source-list" id="sourceList">
+          <div class="source-item">
+            <b>加载中</b><span>正在读取来源列表...</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="panel main">
+        <section class="hero" aria-label="头部信息">
+          <div class="hero-grid">
+            <div>
+              <p class="eyebrow" style="margin-bottom: 6px">每日信息阅读界面</p>
+              <h2 class="hero-title">资讯流浏览面板</h2>
+              <p class="hero-sub">
+                这是连接 FastAPI
+                的本地预览页面。你可以手动触发抓取与摘要，并按来源、语言、关键词筛选资讯流。在搜索框输入后按
+                <span class="kbd">Enter</span> 执行筛选。
+              </p>
+              <div class="status-pill" aria-label="加载进度">
+                <div class="status-track">
+                  <div class="status-fill" id="statusFill"></div>
+                </div>
+                <div class="status-text" id="status">0/0</div>
+              </div>
+            </div>
+            <div class="quick-grid" aria-label="快速统计">
+              <div class="quick-card">
+                <div class="k">最近操作</div>
+                <div class="v" id="lastAction">-</div>
+              </div>
+              <div class="quick-card">
+                <div class="k">已加载条数</div>
+                <div class="v" id="itemCount">0</div>
+              </div>
+              <div class="quick-card">
+                <div class="k">摘要模式</div>
+                <div
+                  class="v"
+                  id="llmMode"
+                  style="font-size: 14px; line-height: 1.25"
+                >
+                  未知
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      <section class="filters-card" aria-label="筛选条件">
+        <div class="filters-grid">
+            <div class="field">
+              <label for="languageFilter">语言</label
+              ><select id="languageFilter">
+                <option value="">全部语言</option>
+                <option value="en">英文</option>
+                <option value="zh">中文</option>
+                <option value="unknown">未知</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="sourceFilter">来源</label
+              ><select id="sourceFilter">
+                <option value="">全部来源</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="queryInput">搜索</label
+              ><input id="queryInput" placeholder="标题 / 摘要 / 正文片段" />
+            </div>
+          </div>
+        </section>
+
+        <section class="overview" id="statsChips" aria-label="概览统计">
+          <span class="chip">0 条资讯</span>
+        </section>
+        <div class="feed-head">
+          <h3>资讯流</h3>
+          <div class="hint">按时间倒序显示，点击标题可跳转原文</div>
+        </div>
+        <section class="cards" id="list" aria-live="polite"></section>
+        <div class="pager" id="pager" aria-label="翻页">
+          <div class="pager-info" id="pageInfo">第 1 / 1 页</div>
+          <button class="btn-soft" id="prevPageBtn" type="button">上一页</button>
+          <button class="btn-soft" id="nextPageBtn" type="button">下一页</button>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const els = {
+        apiBase: document.getElementById("apiBase"),
+        status: document.getElementById("status"),
+        list: document.getElementById("list"),
+        sourceList: document.getElementById("sourceList"),
+        sourceFilter: document.getElementById("sourceFilter"),
+        languageFilter: document.getElementById("languageFilter"),
+        queryInput: document.getElementById("queryInput"),
+        statsChips: document.getElementById("statsChips"),
+        metaBox: document.getElementById("metaBox"),
+        pager: document.getElementById("pager"),
+        pageInfo: document.getElementById("pageInfo"),
+        prevPageBtn: document.getElementById("prevPageBtn"),
+        nextPageBtn: document.getElementById("nextPageBtn"),
+        fetchBtn: document.getElementById("fetchBtn"),
+        sumBtn: document.getElementById("sumBtn"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        metaBtn: document.getElementById("metaBtn"),
+        clearBtn: document.getElementById("clearBtn"),
+        lastAction: document.getElementById("lastAction"),
+        itemCount: document.getElementById("itemCount"),
+        llmMode: document.getElementById("llmMode"),
+        subForm: document.getElementById("subForm"),
+        subName: document.getElementById("subName"),
+        subUrl: document.getElementById("subUrl"),
+        subLang: document.getElementById("subLang"),
+        subType: document.getElementById("subType"),
+        subEnabled: document.getElementById("subEnabled"),
+        subFetchBody: document.getElementById("subFetchBody"),
+        subSubmitBtn: document.getElementById("subSubmitBtn"),
+        fetchLimitInput: document.getElementById("fetchLimitInput"),
+        summarizeLimitInput: document.getElementById("summarizeLimitInput"),
+        statusFill: document.getElementById("statusFill"),
+      };
+      let taskRunning = false;
+      const state = {
+        allItems: [],
+        page: 1,
+        pageSize: 20,
+        recentNewIds: new Set(),
+      };
+
+      if (location.protocol === "http:" || location.protocol === "https:") {
+        els.apiBase.value = location.origin;
+      }
+      const api = (path) => `${els.apiBase.value.replace(/\/$/, "")}${path}`;
+      const setStatus = (t) => {
+        els.status.textContent = t;
+      };
+      const setLastAction = (t) => {
+        els.lastAction.textContent = t;
+      };
+      const timeFmt = (v) => {
+        try {
+          return new Date(v).toLocaleString();
+        } catch {
+          return v;
+        }
+      };
+      const snippet = (text, max = 260) => {
+        const t = String(text || "")
+          .replace(/\s+/g, " ")
+          .trim();
+        return t.length <= max ? t : t.slice(0, max - 3).trimEnd() + "...";
+      };
+      const normalizeText = (text) =>
+        String(text || "")
+          .replace(/\s+/g, " ")
+          .trim();
+      const escapeHtml = (v) =>
+        String(v)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      const isFallbackMvpSummary = (t) =>
+        !!t && String(t).trim().toLowerCase().startsWith("[mvp summary]");
+
+      function setLoadProgress(current = 0, total = 0) {
+        const c = Math.max(0, Number(current) || 0);
+        const t = Math.max(0, Number(total) || 0);
+        els.status.textContent = `${c}/${t}`;
+        const pct = t > 0 ? Math.min(100, Math.round((c / t) * 100)) : 0;
+        els.statusFill.style.width = `${pct}%`;
+      }
+      const nextFrame = () =>
+        new Promise((resolve) => requestAnimationFrame(() => resolve()));
+      function setTaskProgress() {
+        /* hidden by design */
+      }
+      function setTaskButtonsDisabled(disabled) {
+        taskRunning = disabled;
+        [
+          els.fetchBtn,
+          els.sumBtn,
+          els.refreshBtn,
+          els.clearBtn,
+        ]
+          .filter(Boolean)
+          .forEach((b) => (b.disabled = disabled));
+      }
+
+      async function getJson(url, init) {
+        const res = await fetch(url, init);
+        if (!res.ok) {
+          let message = `${res.status} ${res.statusText}`;
+          try {
+            const body = await res.json();
+            if (body && body.detail)
+              message = typeof body.detail === "string" ? body.detail : message;
+          } catch {}
+          throw new Error(message);
+        }
+        return res.json();
+      }
+
+      async function loadMeta() {
+        const meta = await getJson(api("/api/meta"));
+        const llmEnabled = Boolean(meta.llm && meta.llm.llm_enabled);
+        const modeText = llmEnabled
+          ? `LLM已启用${meta.llm.llm_model ? `（${meta.llm.llm_model}）` : ""}`
+          : "规则降级";
+        if (els.metaBox) {
+          els.metaBox.innerHTML = `
+          <div><strong>服务:</strong> ${escapeHtml(meta.service)}</div>
+          <div><strong>版本:</strong> ${escapeHtml(meta.version)}</div>
+          <div><strong>资讯总数:</strong> ${meta.news_count}</div>
+          <div><strong>摘要模式:</strong> ${escapeHtml(modeText)}</div>
+          <div><strong>跨域:</strong> ${escapeHtml(meta.cors)}</div>`;
+        }
+        els.llmMode.textContent = modeText;
+      }
+
+      async function loadSources() {
+        const sources = await getJson(api("/api/sources"));
+        els.sourceList.innerHTML = "";
+        els.sourceFilter.innerHTML = '<option value="">全部来源</option>';
+        for (const src of sources) {
+          const row = document.createElement("div");
+          row.className = "source-item";
+          row.innerHTML = `
+          <b>${escapeHtml(src.name)} <span class="tag ${src.is_custom ? "custom" : ""}">${src.is_custom ? "自定义" : "默认"}</span></b>
+          <span>${escapeHtml(src.language)} | ${escapeHtml(src.source_type)} | ${src.enabled ? "启用" : "禁用"}${src.fetch_body ? " | 抓正文" : ""}</span>
+          <span>${escapeHtml(src.url)}</span>`;
+          els.sourceList.appendChild(row);
+          if (src.enabled) {
+            const opt = document.createElement("option");
+            opt.value = src.name;
+            opt.textContent = src.name;
+            els.sourceFilter.appendChild(opt);
+          }
+        }
+      }
+
+      function renderStats(items) {
+        const counts = items.reduce(
+          (acc, item) => {
+            acc.total += 1;
+            acc[item.language] = (acc[item.language] || 0) + 1;
+            return acc;
+          },
+          { total: 0 },
+        );
+        const chips = [
+          `${counts.total || 0} 条资讯`,
+          counts.en ? `${counts.en} EN` : null,
+          counts.zh ? `${counts.zh} ZH` : null,
+          counts.unknown ? `${counts.unknown} 未知` : null,
+          state.recentNewIds.size ? `本次新增 ${state.recentNewIds.size} 条` : null,
+        ].filter(Boolean);
+        els.statsChips.innerHTML = chips
+          .map(
+            (c) =>
+              `<span class="chip ${String(c).startsWith("本次新增") ? "chip-new" : ""}">${escapeHtml(c)}</span>`,
+          )
+          .join("");
+        els.itemCount.textContent = String(counts.total || 0);
+      }
+
+      function renderPager(totalItems) {
+        const totalPages = Math.max(1, Math.ceil(totalItems / state.pageSize));
+        if (state.page > totalPages) state.page = totalPages;
+        if (state.page < 1) state.page = 1;
+        els.pageInfo.textContent = `第 ${state.page} / ${totalPages} 页`;
+        els.prevPageBtn.disabled = taskRunning || state.page <= 1;
+        els.nextPageBtn.disabled = taskRunning || state.page >= totalPages;
+        els.pager.style.display = totalItems ? "flex" : "none";
+      }
+
+      async function renderNews(items) {
+        els.list.innerHTML = "";
+        if (!items.length) {
+          setLoadProgress(0, 0);
+          renderPager(0);
+          els.list.innerHTML = `<div class="empty">暂无资讯。请先点击 <strong>抓取资讯</strong>，再点击 <strong>生成摘要</strong>。如果后端尚未启动，请检查左侧面板中的 API 地址。</div>`;
+          return;
+        }
+        renderPager(items.length);
+        const start = (state.page - 1) * state.pageSize;
+        const pageItems = items.slice(start, start + state.pageSize);
+        const total = pageItems.length;
+        setLoadProgress(0, total);
+        for (let i = 0; i < pageItems.length; i += 1) {
+          const item = pageItems[i];
+          const langClass =
+            item.language === "zh"
+              ? "lang-zh"
+              : item.language === "en"
+                ? "lang-en"
+                : "";
+          const originalFull =
+            item.language !== "zh"
+              ? normalizeText(item.content_text || item.title)
+              : "";
+          const chineseSummaryRaw = item.summary_cn || "";
+          const hasFallbackSummary = isFallbackMvpSummary(chineseSummaryRaw);
+          const chineseSummary =
+            chineseSummaryRaw || "（暂无摘要，请先执行“生成摘要”任务）";
+          const summaryHtml =
+            item.language !== "zh"
+              ? `<div class="summary-block"><p class="summary-label">原文摘要</p><p class="summary">${escapeHtml(originalFull || "（暂无原文片段）")}</p></div>
+             <div class="summary-block"><p class="summary-label">${hasFallbackSummary ? "中文翻译（未完成）" : "中文翻译 / 摘要"}</p><p class="summary">${escapeHtml(hasFallbackSummary ? "当前后端返回的是占位摘要（未翻译）。请配置 LLM 后重新执行“生成摘要”。" : chineseSummary)}</p></div>`
+              : `<div class="summary-block"><p class="summary-label">中文摘要</p><p class="summary">${escapeHtml(chineseSummary)}</p></div>`;
+          const card = document.createElement("article");
+          const isNew = state.recentNewIds.has(item.id);
+          card.className = `card${isNew ? " is-new" : ""}`;
+          card.innerHTML = `
+          <div class="card-top"><div class="meta"><span class="badge">${escapeHtml(item.source)}</span><span class="badge ${langClass}">${escapeHtml(item.language)}</span>${isNew ? '<span class="badge new-item">新增</span>' : ""}<span class="badge">${escapeHtml(timeFmt(item.published_at))}</span></div><div class="stamp">#${String(start + i + 1).padStart(2, "0")}</div></div>
+          <h3 class="title"><a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></h3>
+          ${summaryHtml}
+          ${item.content_text ? `<div class="snippet">${escapeHtml(snippet(item.content_text, 320))}</div>` : ""}`;
+          els.list.appendChild(card);
+          setLoadProgress(i + 1, total);
+          if ((i + 1) % 3 === 0) {
+            await nextFrame();
+          }
+        }
+      }
+
+      async function loadNews({ resetPage = false } = {}) {
+        if (resetPage) state.page = 1;
+        const params = new URLSearchParams({ limit: "2000" });
+        if (els.languageFilter.value)
+          params.set("language", els.languageFilter.value);
+        if (els.sourceFilter.value)
+          params.set("source", els.sourceFilter.value);
+        if (els.queryInput.value.trim())
+          params.set("q", els.queryInput.value.trim());
+        setLoadProgress(0, 0);
+        const items = await getJson(api(`/api/news?${params.toString()}`));
+        state.allItems = items;
+        renderStats(state.allItems);
+        await renderNews(state.allItems);
+        setLastAction("刷新列表");
+      }
+
+      async function runJob(jobName) {
+        if (taskRunning) return;
+        const beforeIds = new Set(state.allItems.map((item) => item.id));
+        let path = `/api/jobs/${jobName}`;
+        let paramLabel = "-";
+        if (jobName === "fetch") {
+          const total = Number.parseInt(els.fetchLimitInput.value || "", 10);
+          const p = new URLSearchParams();
+          p.set("per_source_limit", "5");
+          if (Number.isFinite(total) && total > 0)
+            p.set("total_limit", String(total));
+          path += `?${p.toString()}`;
+          paramLabel = `per_source=5, total=${p.get("total_limit") || "默认"}`;
+        } else if (jobName === "summarize") {
+          const total = Number.parseInt(
+            els.summarizeLimitInput.value || "",
+            10,
+          );
+          const p = new URLSearchParams();
+          if (Number.isFinite(total) && total > 0)
+            p.set("limit", String(total));
+          if ([...p.keys()].length) path += `?${p.toString()}`;
+          paramLabel = `limit=${p.get("limit") || "默认"}`;
+        }
+        setTaskButtonsDisabled(true);
+        setLoadProgress(0, 0);
+        setLastAction(jobName === "fetch" ? "抓取资讯" : "生成摘要");
+        setTaskProgress({
+          task: jobName === "fetch" ? "抓取资讯" : "生成摘要",
+          stage: "已发起请求",
+          params: paramLabel,
+          line: "正在等待后端完成任务，请稍候...",
+        });
+        try {
+          const data = await getJson(api(path), { method: "POST" });
+          setTaskProgress({
+            task: jobName === "fetch" ? "抓取资讯" : "生成摘要",
+            stage: "已完成",
+            params: paramLabel,
+            line: data.message || "任务执行完成",
+          });
+          await Promise.all([
+            loadMeta().catch(() => {}),
+            loadNews({ resetPage: jobName === "fetch" }),
+          ]);
+          if (jobName === "fetch") {
+            state.recentNewIds = new Set(
+              state.allItems
+                .filter((item) => !beforeIds.has(item.id))
+                .map((item) => item.id),
+            );
+            renderStats(state.allItems);
+            await renderNews(state.allItems);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        } catch (err) {
+          setLoadProgress(0, 0);
+          setTaskProgress({
+            task: jobName === "fetch" ? "抓取资讯" : "生成摘要",
+            stage: "失败",
+            params: paramLabel,
+            line: `错误：${err.message}`,
+          });
+        } finally {
+          setTaskButtonsDisabled(false);
+        }
+      }
+
+      async function clearHistory() {
+        if (taskRunning) return;
+        const ok = window.confirm(
+          "确认清空历史资讯吗？此操作会删除当前已抓取与已摘要的数据。",
+        );
+        if (!ok) return;
+        setTaskButtonsDisabled(true);
+        setStatus("正在清空历史资讯...");
+        setLastAction("清空历史");
+        setTaskProgress({
+          task: "清空历史",
+          stage: "已发起请求",
+          params: "-",
+          line: "正在清空本地历史数据，请稍候...",
+        });
+        try {
+          const data = await getJson(api("/api/jobs/clear"), {
+            method: "POST",
+          });
+          setStatus(data.message || "清空完成");
+          setTaskProgress({
+            task: "清空历史",
+            stage: "已完成",
+            params: "-",
+            line: data.message || "清空完成",
+          });
+          state.recentNewIds = new Set();
+          await Promise.all([loadMeta().catch(() => {}), loadNews({ resetPage: true })]);
+        } catch (err) {
+          setStatus(err.message);
+          setTaskProgress({
+            task: "清空历史",
+            stage: "失败",
+            params: "-",
+            line: `错误：${err.message}`,
+          });
+        } finally {
+          setTaskButtonsDisabled(false);
+        }
+      }
+
+      async function submitSubscription(event) {
+        event.preventDefault();
+        const payload = {
+          name: els.subName.value.trim(),
+          url: els.subUrl.value.trim(),
+          language: els.subLang.value,
+          source_type: els.subType.value,
+          enabled: els.subEnabled.checked,
+          fetch_body: els.subFetchBody.checked,
+        };
+        if (!payload.name || !payload.url) {
+          return;
+        }
+        els.subSubmitBtn.disabled = true;
+        const oldText = els.subSubmitBtn.textContent;
+        els.subSubmitBtn.textContent = "提交中...";
+        try {
+          await getJson(api("/api/sources"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          setLastAction("添加订阅");
+          els.subForm.reset();
+          els.subLang.value = "zh";
+          els.subType.value = "rss";
+          els.subEnabled.checked = true;
+          await loadSources();
+        } catch (err) {
+          console.error(err);
+        } finally {
+          els.subSubmitBtn.disabled = false;
+          els.subSubmitBtn.textContent = oldText;
+        }
+      }
+
+      async function bootstrap() {
+        setLoadProgress(0, 0);
+        setLastAction("初始化");
+        setTaskProgress({
+          task: "空闲",
+          stage: "初始化",
+          params: "-",
+          line: "正在读取服务状态与来源列表...",
+        });
+        await Promise.all([loadMeta(), loadSources()]);
+        await loadNews({ resetPage: true });
+        setTaskProgress({
+          task: "空闲",
+          stage: "就绪",
+          params: "-",
+          line: "系统已就绪，可执行抓取或摘要任务。",
+        });
+      }
+
+      els.fetchBtn.addEventListener("click", () => runJob("fetch"));
+      els.sumBtn.addEventListener("click", () => runJob("summarize"));
+      els.refreshBtn.addEventListener("click", () =>
+        loadNews({ resetPage: false }).catch((err) => console.error(err)),
+      );
+      if (els.metaBtn) {
+        els.metaBtn.addEventListener("click", () =>
+          Promise.all([loadMeta(), loadSources()])
+            .then(() => {
+              setLoadProgress(0, 0);
+              setLastAction("刷新状态");
+              setTaskProgress({
+                task: "空闲",
+                stage: "就绪",
+                params: "-",
+                line: "状态与来源列表已刷新。",
+              });
+            })
+            .catch((err) => console.error(err)),
+        );
+      }
+      els.clearBtn.addEventListener("click", clearHistory);
+      els.subForm.addEventListener("submit", submitSubscription);
+      els.languageFilter.addEventListener("change", () =>
+        ((state.recentNewIds = new Set()),
+        loadNews({ resetPage: true }).catch((err) => console.error(err))),
+      );
+      els.sourceFilter.addEventListener("change", () =>
+        ((state.recentNewIds = new Set()),
+        loadNews({ resetPage: true }).catch((err) => console.error(err))),
+      );
+      els.queryInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          state.recentNewIds = new Set();
+          loadNews({ resetPage: true }).catch((err) => console.error(err));
+        }
+      });
+      els.prevPageBtn.addEventListener("click", () => {
+        if (state.page <= 1) return;
+        state.page -= 1;
+        renderNews(state.allItems).catch((err) => console.error(err));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      els.nextPageBtn.addEventListener("click", () => {
+        const totalPages = Math.max(1, Math.ceil(state.allItems.length / state.pageSize));
+        if (state.page >= totalPages) return;
+        state.page += 1;
+        renderNews(state.allItems).catch((err) => console.error(err));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      bootstrap().catch((err) => {
+        setLoadProgress(0, 0);
+        console.error(err);
+        setTaskProgress({
+          task: "空闲",
+          stage: "失败",
+          params: "-",
+          line: `初始化失败：${err.message}`,
+        });
+      });
+    </script>
+  </body>
+</html>
