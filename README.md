@@ -4,8 +4,9 @@
 
 ## 目录说明
 
-- `1-investment.ipynb`：学习笔记（Jupyter）
-- `etf.csv`：示例数据文件
+- `learning/`: 自学内容
+  - `investment.ipynb`：学习笔记（Jupyter）
+  - `etf.csv`：示例数据文件
 - `quant-news-site/`：个人资讯阅读台（财经资讯抓取 + 摘要 + 浏览）
 
 ## 个人资讯阅读台（`quant-news-site`）
